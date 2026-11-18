@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d1c">
+  <title>NEXORA | منصة التعلم الذكي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <canvas id="particles"></canvas>
+
+  <!-- تسجيل الدخول وإنشاء الحساب داخل NEXORA -->
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="brand auth-brand">
+        <span class="brand-mark">N</span>
+        <span>NEXORA</span>
+      </div>
+
+      <p class="eyebrow">YOUR NEXT LEVEL STARTS HERE</p>
+      <h1 id="authTitle">مرحبًا بعودتك</h1>
+      <p class="muted" id="authSubtitle">سجّل دخولك وكمّل رحلتك التعليمية.</p>
+
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-auth-tab="login">تسجيل الدخول</button>
+        <button type="button" class="auth-tab" data-auth-tab="signup">إنشاء حساب</button>
+      </div>
+
+      <form id="authForm">
+        <div id="nameField" class="field hidden">
+          <label for="authName">الاسم بالكامل</label>
+          <input id="authName" type="text" autocomplete="name" placeholder="اكتب اسمك" maxlength="50">
+        </div>
+
+        <div class="field">
+          <label for="authEmail">البريد الإلكتروني</label>
+          <input id="authEmail" type="email" autocomplete="email" required placeholder="name@example.com">
+        </div>
+
+        <div class="field">
+          <label for="authPassword">كلمة المرور</label>
+          <input id="authPassword" type="password" minlength="6" autocomplete="current-password" required placeholder="6 أحرف على الأقل">
+        </div>
+
+        <div id="roleField" class="field hidden">
+          <label for="authRole">نوع الحساب</label>
+          <select id="authRole">
+            <option value="student">طالب</option>
+            <option value="teacher">معلم (تجريبي)</option>
+          </select>
+        </div>
+
+        <button class="btn primary full" id="authSubmit" type="submit">
+          تسجيل الدخول <span>←</span>
+        </button>
+      </form>
+
+      <p id="authMessage" class="form-message" aria-live="polite"></p>
+      <p class="auth-note">نسخة تجريبية: الحسابات تُحفظ على هذا المتصفح فقط.</p>
+    </div>
+  </section>
+
+  <!-- محتوى المنصة -->
+  <div id="appShell" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" data-view="home">
+        <span class="brand-mark">N</span>
+        <span>NEXORA</span>
+      </a>
+
+      <div class="side-label">القائمة الرئيسية</div>
+
+      <nav class="side-nav">
+        <button class="nav-link active" data-view="home"><span>⌂</span> الرئيسية</button>
+        <button class="nav-link" data-view="courses"><span>▤</span> الدروس والكورسات</button>
+        <button class="nav-link" data-view="exams"><span>✓</span> الاختبارات</button>
+        <button class="nav-link" data-view="planner"><span>▦</span> جدول المذاكرة</button>
+        <button class="nav-link" data-view="leaderboard"><span>♛</span> لوحة المتصدرين</button>
+        <button class="nav-link" data-view="notifications">
+          <span>♧</span> الإشعارات
+          <i id="notificationCount" class="nav-count">0</i>
+        </button>
+        <button class="nav-link" data-view="profile"><span>◎</span> الملف الشخصي</button>
+        <button class="nav-link teacher-only hidden" data-view="admin"><span>▣</span> لوحة المعلم</button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="mini-level">
+          <div class="mini-level-top">
+            <span>مستواك الحالي</span>
+            <b id="sideLevel">1</b>
+          </div>
+          <div class="progress-track">
+            <span id="sideXpBar" style="width:0%"></span>
+          </div>
+          <small id="sideXpText">0 / 100 XP</small>
+        </div>
+
+        <button class="nav-link" id="themeToggle"><span>◐</span> الوضع الليلي / النهاري</button>
+        <button class="nav-link logout-link" id="logoutBtn"><span>↪</span> تسجيل الخروج</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu" id="menuToggle" aria-label="فتح القائمة">☰</button>
+
+        <div>
+          <p class="top-kicker">مساحتك للتعلم والتطور</p>
+          <h2 id="pageTitle">الرئيسية</h2>
+        </div>
+
+        <div class="top-actions">
+          <button class="icon-btn" data-view="notifications" title="الإشعارات">
+            ♧<i id="topNotificationDot"></i>
+          </button>
+
+          <button class="user-chip" data-view="profile">
+            <span class="avatar" id="topAvatar">N</span>
+            <span>
+              <b id="topUserName">طالب NEXORA</b>
+              <small id="topUserRole">طالب</small>
+            </span>
+          </button>
+        </div>
+      </header>
+
+      <!-- الرئيسية -->
+      <section id="view-home" class="view active">
+        <div class="hero-panel">
+          <div class="hero-copy">
+            <span class="hero-tag">✦ LEARN • GROW • ACHIEVE</span>
+            <h1>أهلاً بيك في <em>NEXORA</em></h1>
+            <p>كل يوم فرصة جديدة تتعلم فيها حاجة، وتقترب من هدفك.</p>
+            <div class="hero-actions">
+              <button class="btn primary" data-view="courses">ابدأ التعلم <span>←</span></button>
+              <button class="btn ghost" data-view="planner">نظّم وقتك</button>
+            </div>
+          </div>
+
+          <div class="hero-art">
+            <div class="orbit orbit-a"></div>
+            <div class="orbit orbit-b"></div>
+            <div class="hero-core">N<span>✦</span></div>
+            <div class="float-card float-one">⚡ <b id="heroXp">0 XP</b><small>نقاطك</small></div>
+            <div class="float-card float-two">🏆 <b id="heroLevel">المستوى 1</b><small>استمر في التقدم</small></div>
+          </div>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">YOUR OVERVIEW</p>
+            <h3>ملخص رحلتك</h3>
+          </div>
+          <span class="muted">تابع إنجازاتك أولًا بأول</span>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-icon purple">⚡</span>
+            <div><small>إجمالي النقاط</small><strong id="statXp">0</strong><small class="positive">XP مكتسبة</small></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon blue">◈</span>
+            <div><small>المستوى الحالي</small><strong id="statLevel">1</strong><small>واصل عشان تعلى</small></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon orange">▣</span>
+            <div><small>الدروس المكتملة</small><strong id="statLessons">0</strong><small>درس مكتمل</small></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon green">✓</span>
+            <div><small>الاختبارات المنتهية</small><strong id="statExams">0</strong><small>اختبار تم حله</small></div>
+          </article>
+        </div>
+
+        <div class="content-grid">
+          <div class="panel">
+            <div class="panel-heading">
+              <div><p class="eyebrow">CONTINUE LEARNING</p><h3>كمّل من حيث توقفت</h3></div>
+              <button class="text-btn" data-view="courses">كل الدروس ←</button>
+            </div>
+            <div id="homeCourses" class="course-list"></div>
+          </div>
+
+          <div class="panel achievement-panel">
+            <div class="panel-heading">
+              <div><p class="eyebrow">YOUR BADGES</p><h3>الشارات</h3></div>
+              <span class="badge-count" id="badgeCount">0</span>
+            </div>
+            <div id="homeBadges" class="badge-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- الدروس -->
+      <section id="view-courses" class="view">
+        <div class="page-intro">
+          <p class="eyebrow">LEARNING CENTER</p>
+          <h1>الدروس والكورسات</h1>
+          <p>اختار درس وابدأ التعلم، وبعد ما تخلص علّمه كمكتمل لتحصل على نقاط.</p>
+        </div>
+
+        <div id="courseGrid" class="course-grid"></div>
+
+        <div id="lessonPlayer" class="panel player-panel hidden">
+          <div class="panel-heading">
+            <div><p class="eyebrow">LESSON PLAYER</p><h3 id="playerTitle">مشغل الدرس</h3></div>
+            <button class="btn ghost small" id="closePlayer">إغلاق</button>
+          </div>
+
+          <video id="lessonVideo" controls playsinline preload="metadata">
+            <source id="videoSource" src="" type="video/mp4">
+            متصفحك لا يدعم تشغيل الفيديو.
+          </video>
+
+          <p id="playerDescription" class="muted"></p>
+          <button id="completeLesson" class="btn primary">✓ علّم الدرس كمكتمل واحصل على 20 XP</button>
+          <p class="tiny-note">أضف رابط فيديو MP4 داخل بيانات الدروس في ملف script.js لتشغيل محتوى حقيقي.</p>
+        </div>
+      </section>
+
+      <!-- الاختبارات -->
+      <section id="view-exams" class="view">
+        <div class="page-intro">
+          <p class="eyebrow">TEST YOURSELF</p>
+          <h1>الاختبارات</h1>
+          <p>جاوب على الأسئلة وشوف نتيجتك فورًا.</p>
+        </div>
+        <div id="examList" class="exam-grid"></div>
+        <div id="examArea" class="panel exam-area hidden"></div>
+      </section>
+
+      <!-- جدول المذاكرة -->
+      <section id="view-planner" class="view">
+        <div class="page-intro">
+          <p class="eyebrow">PLAN YOUR SUCCESS</p>
+          <h1>جدول المذاكرة والمهام</h1>
+          <p>اكتب مهامك اليومية، وحدد وقتها، وتابع إنجازك.</p>
+        </div>
+
+        <form id="taskForm" class="panel task-form">
+          <div class="field">
+            <label for="taskTitle">المهمة</label>
+            <input id="taskTitle" required maxlength="90" placeholder="مثال: مراجعة درس الغلاف المائي">
+          </div>
+          <div class="field">
+            <label for="taskDate">التاريخ</label>
+            <input id="taskDate" type="date" required>
+          </div>
+          <div class="field">
+            <label for="taskTime">الوقت</label>
+            <input id="taskTime" type="time">
+          </div>
+          <button class="btn primary" type="submit">+ إضافة مهمة</button>
+        </form>
+
+        <div class="panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">YOUR TASKS</p><h3>قائمة المهام</h3></div>
+            <span class="badge-count" id="taskCount">0</span>
+          </div>
+          <div id="taskList" class="task-list"></div>
+        </div>
+      </section>
+
+      <!-- المتصدرين -->
+      <section id="view-leaderboard" class="view">
+        <div class="page-intro">
+          <p class="eyebrow">TOP LEARNERS</p>
+          <h1>لوحة المتصدرين</h1>
+          <p>شوف ترتيبك بين الحسابات المسجلة على هذا الجهاز.</p>
+        </div>
+        <div class="panel">
+          <div class="leader-head"><span>الترتيب</span><span>الطالب</span><span>النقاط</span></div>
+          <div id="leaderboardList"></div>
+        </div>
+      </section>
+
+      <!-- الإشعارات -->
+      <section id="view-notifications" class="view">
+        <div class="page-intro">
+          <p class="eyebrow">STAY UPDATED</p>
+          <h1>مركز الإشعارات</h1>
+          <p>كل التحديثات والإنجازات في مكان واحد.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-heading">
+            <h3>كل الإشعارات</h3>
+            <button id="markAllRead" class="text-btn">تحديد الكل كمقروء</button>
+          </div>
+          <div id="notificationList" class="notification-list"></div>
+        </div>
+      </section>
+
+      <!-- الملف الشخصي -->
+      <section id="view-profile" class="view">
+        <div class="page-intro">
+          <p class="eyebrow">YOUR ACCOUNT</p>
+          <h1>الملف الشخصي</h1>
+          <p>راجع بياناتك وإنجازاتك التعليمية.</p>
+        </div>
+
+        <div class="profile-layout">
+          <div class="panel profile-card">
+            <div class="profile-avatar" id="profileAvatar">N</div>
+            <h2 id="profileName">طالب NEXORA</h2>
+            <p id="profileEmail" class="muted"></p>
+            <span class="role-pill" id="profileRole">طالب</span>
+            <div class="profile-xp">
+              <strong id="profileXp">0 XP</strong>
+              <span id="profileLevel">المستوى 1</span>
+            </div>
+            <div class="progress-track"><span id="profileProgress"></span></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-heading"><h3>تعديل بياناتك</h3></div>
+            <form id="profileForm">
+              <div class="field">
+                <label for="profileNameInput">الاسم</label>
+                <input id="profileNameInput" required maxlength="50">
+              </div>
+              <button class="btn primary" type="submit">حفظ التعديلات</button>
+            </form>
+            <div class="divider"></div>
+            <h3>الشارات التي حصلت عليها</h3>
+            <div id="profileBadges" class="badge-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- لوحة المعلم -->
+      <section id="view-admin" class="view">
+        <div class="page-intro">
+          <p class="eyebrow">TEACHER SPACE</p>
+          <h1>لوحة المعلم والإدارة</h1>
+          <p>إدارة تجريبية لمتابعة الطلاب وإضافة إشعارات ودروس.</p>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-icon purple">♙</span>
+            <div><small>الحسابات على الجهاز</small><strong id="adminUsers">0</strong></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon blue">✓</span>
+            <div><small>إجمالي المهام المكتملة</small><strong id="adminTasks">0</strong></div>
+          </article>
+        </div>
+
+        <div class="content-grid">
+          <div class="panel">
+            <h3>إرسال إشعار للطلاب</h3>
+            <form id="announcementForm">
+              <div class="field">
+                <label for="announcementText">نص الإشعار</label>
+                <textarea id="announcementText" required rows="3" placeholder="اكتب إعلانك هنا..."></textarea>
+              </div>
+              <button class="btn primary">إرسال الإشعار</button>
+            </form>
+          </div>
+
+          <div class="panel">
+            <h3>إضافة درس جديد</h3>
+            <form id="newLessonForm">
+              <div class="field">
+                <label for="newLessonTitle">اسم الدرس</label>
+                <input id="newLessonTitle" required>
+              </div>
+              <div class="field">
+                <label for="newLessonSubject">المادة</label>
+                <input id="newLessonSubject" required>
+              </div>
+              <div class="field">
+                <label for="newLessonVideo">رابط فيديو MP4 (اختياري)</label>
+                <input id="newLessonVideo" type="url" placeholder="https://...">
+              </div>
+              <button class="btn primary">إضافة الدرس</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-heading"><h3>الحسابات المسجلة على الجهاز</h3></div>
+          <div id="adminUserList"></div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        NEXORA © 2026
+        <span>تعلم النهارده، واصنع مستقبلك.</span>
+      </footer>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="script.js"></script>
+</body>
+</html>
